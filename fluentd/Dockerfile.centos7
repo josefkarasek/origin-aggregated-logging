@@ -26,8 +26,11 @@ RUN rpmkeys --import file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7 && \
       bc \
       iproute && \
     yum clean all
+
+COPY fluent-plugin-dockerevents-0.0.3.gem /tmp/fluent-plugin-dockerevents-0.0.3.gem
+
 RUN mkdir -p ${HOME} && \
-    gem install -N --conservative --minimal-deps --no-ri \
+    cd /tmp; gem install -N --conservative --minimal-deps --no-ri \
      'activesupport:<5' \
      'elasticsearch-transport:<5' \
      'elasticsearch-api:<5' \
@@ -39,7 +42,8 @@ RUN mkdir -p ${HOME} && \
       fluent-plugin-secure-forward \
      'fluent-plugin-systemd:<0.1.0' \
       fluent-plugin-viaq_data_model \
-      systemd-journal
+      systemd-journal \
+      fluent-plugin-dockerevents-0.0.3.gem
 
 ADD configs.d/ /etc/fluent/configs.d/
 ADD run.sh generate_throttle_configs.rb ${HOME}/
@@ -47,6 +51,8 @@ ADD run.sh generate_throttle_configs.rb ${HOME}/
 RUN mkdir -p /etc/fluent/configs.d/{dynamic,user} && \
     chmod 777 /etc/fluent/configs.d/dynamic && \
     ln -s /etc/fluent/configs.d/user/fluent.conf /etc/fluent/fluent.conf
+
+
 
 WORKDIR ${HOME}
 USER 0
