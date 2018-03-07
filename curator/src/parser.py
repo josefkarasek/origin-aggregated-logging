@@ -72,7 +72,7 @@ class Parser():
         return self
 
     def parse_regex(self, regex_list):
-        for regex in self.config_yaml['.regex']:
+        for regex in regex_list:
             # check for empty nodes
             if not regex.get(self.DELETE) or not regex.get('pattern'):
                 raise Exception('Invalid configuration. [%s] is incomplete.' % regex)

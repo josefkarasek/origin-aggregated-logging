@@ -43,8 +43,7 @@ class CuratorCmd():
 
     def check_config(self):
         if len(self.conf) == 0:
-            self.logger.error('No configuration supplied.')
-            sys.exit(1)
+            raise ValueError('No configuration supplied.')
         for project in self.conf:
             if project == '.defaults' or project == '.operations':
                 continue
@@ -58,10 +57,8 @@ class CuratorCmd():
                 # check project's name validity
                 if len(project) > self.projectmaxlen:
                     raise ValueError('The project name length must be less than or equal to {0} characters. This is too long: [{1}]'.format(self.projectmaxlen, project))
-                    sys.exit(1)
                 if not self.projectre.match(project):
                     raise ValueError('The project name must match this regex: [{0}] This does not match: [{1}]'.format(self.projectre.pattern, project))
-                    sys.exit(1)
             self.logger.info('Adding project [%s]', project)
 
         # check timezone
@@ -71,10 +68,8 @@ class CuratorCmd():
                 self.conf['.defaults']['timezone'] = timezone(tzstr)
             except (AttributeError, UnknownTimeZoneError) as myex:
                 raise ValueError('The timezone must be specified as a string in the tzselect(8) or timedatectl(1) "Region/Locality" format e.g. "America/New_York" or "UTC".  [%s] is not a valid timezone string: error [%s]' % (str(tzstr), str(myex)))
-                sys.exit(1)
             except: # unexpected error
                 raise ValueError('The timezone must be specified as a string in the tzselect(8) or timedatectl(1) "Region/Locality" format e.g. "America/New_York" or "UTC".  Unexpected error [%s] attempting to parse timezone [%s]' % (str(sys.exc_info()[0]), str(tzstr)))
-                sys.exit(1)
             self.logger.debug('Using timezone [%s]' % tzstr)
 
         return self
@@ -116,7 +111,7 @@ class CuratorCmd():
                     unit = self.conf[project][operation]['unit']
                     count = self.conf[project][operation]['count']
                     raw_regex = self.conf[project][self.RAW_REGEX]
-                    
+
                     if not raw_regex:
                         if project.startswith('.') or project.startswith(self.PROJ_PREFIX):
                             default_command = default_command \
@@ -134,7 +129,7 @@ class CuratorCmd():
                 else:
                     if operation not in self.allowed_params:
                         self.logger.error('an unsupported or unknown operation ' + operation + ' was provided... Record skipped')
-        
+
         self.commands.append(default_command)
         for operation in self.curator_settings:
             for unit in self.curator_settings[operation]:
@@ -151,7 +146,7 @@ class CuratorCmd():
                                 lambda project: project,
                                 self.curator_settings[operation][unit][value])) + ')')
                     self.commands.append(tab_cmd)
-                
+
     def build_cmd_list(self):
         self.check_config()
         self.build_cmd()
@@ -159,4 +154,3 @@ class CuratorCmd():
 
     def get_defaults(self):
         return self.conf.get('.defaults', {})
- 
